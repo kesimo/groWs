@@ -21,7 +21,7 @@ func TestNewApp(t *testing.T) {
 		return nil
 	})
 	handler.On("test", func(client *Client, data []byte) error {
-		log.Println("test")
+		log.Println(string(data))
 		err := client.Write([]byte("test-back"))
 		if err != nil {
 			return err
@@ -38,6 +38,14 @@ func TestNewApp(t *testing.T) {
 		log.Println("Handshake")
 		client.SetMeta("user", "testUser122312")
 		return true
+	})
+	app.AddReceiveMiddleware("/test", func(client *Client, data []byte) ([]byte, error) {
+		log.Println("Receive: " + string(data))
+		return data, nil
+	})
+	app.AddSendMiddleware("/test", func(client *Client, data []byte) ([]byte, error) {
+		log.Println("Send: " + string(data))
+		return data, nil
 	})
 
 	log.Fatalln(app.ListenAndServe())

@@ -76,31 +76,31 @@ func (a *App) ListenAndServe() error {
 }
 
 func (a *App) getMiddlewaresForRoute(route string) (HandshakeMiddleware, []ReceiveMiddleware, []SendMiddleware) {
-	handshakeMiddleware := func(client *Client) bool { return true }
-	receiveMiddlewares := make([]ReceiveMiddleware, 0)
-	sendMiddlewares := make([]SendMiddleware, 0)
+	hMiddlewares := func(client *Client) bool { return true }
+	rMiddlewares := make([]ReceiveMiddleware, 0)
+	sMiddlewares := make([]SendMiddleware, 0)
 	// generate route specific middleware chain by regex matching
 	for regex, receiveMiddlewares := range a.receiveMiddlewares {
 		// check if regex from middleware matches the route
 		if match, _ := regexp.MatchString(regex, route); match {
-			receiveMiddlewares = append(receiveMiddlewares, receiveMiddlewares...)
+			rMiddlewares = append(rMiddlewares, receiveMiddlewares...)
 		}
 	}
 	for regex, sendMiddlewares := range a.sendMiddlewares {
 		// check if regex from middleware matches the route
 		if match, _ := regexp.MatchString(regex, route); match {
-			sendMiddlewares = append(sendMiddlewares, sendMiddlewares...)
+			sMiddlewares = append(sMiddlewares, sendMiddlewares...)
 		}
 	}
 	for regex, handshake := range a.handshakeMiddlewares {
 		// check if regex from middleware matches the route
 		if match, _ := regexp.MatchString(regex, route); match {
-			handshakeMiddleware = handshake
+			hMiddlewares = handshake
 			// skip after first match because only one handshake middleware per route is allowed
 			break
 		}
 	}
-	return handshakeMiddleware, receiveMiddlewares, sendMiddlewares
+	return hMiddlewares, rMiddlewares, sMiddlewares
 }
 
 func (a *App) buildHandlerFunc(route string, handler ClientHandler) HandlerFunc {
