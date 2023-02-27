@@ -1,11 +1,14 @@
 package groWs
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"log"
+)
 
 type Event struct {
 	// Event identifier
 	Identifier string `json:"event"`
-	Data       []byte `json:"data"`
+	Data       any    `json:"data"`
 }
 
 func isJSON(data []byte) bool {
@@ -19,6 +22,7 @@ func isEvent(data []byte) bool {
 	var e Event
 	err := json.Unmarshal(data, &e)
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 	return true

@@ -28,6 +28,10 @@ func TestNewApp(t *testing.T) {
 		}
 		return nil
 	})
+	handler.OnEvent("test-event", func(client *Client, data any) error {
+		log.Println("event: " + data.(string))
+		return nil
+	})
 
 	router := NewRouter()
 	router.AddRoute("/test", handler)

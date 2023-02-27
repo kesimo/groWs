@@ -11,7 +11,7 @@ type ClientHandler struct {
 	onConnect    func(*Client) error
 	onDisconnect func(*Client) error
 	on           map[string]func(client *Client, data []byte) error
-	onEvent      map[string]func(client *Client, data []byte) error
+	onEvent      map[string]func(client *Client, data interface{}) error
 	middlewares  []HandlerFunc
 }
 
@@ -20,7 +20,7 @@ func NewClientHandler() ClientHandler {
 		onDisconnect: nil,
 		onConnect:    nil,
 		on:           make(map[string]func(*Client, []byte) error),
-		onEvent:      make(map[string]func(*Client, []byte) error),
+		onEvent:      make(map[string]func(*Client, interface{}) error),
 	}
 }
 
@@ -40,7 +40,7 @@ func (ch *ClientHandler) On(event string, f func(client *Client, data []byte) er
 }
 
 // OnEvent sets the onEvent function
-func (ch *ClientHandler) OnEvent(event string, f func(client *Client, data []byte) error) {
+func (ch *ClientHandler) OnEvent(event string, f func(client *Client, data interface{}) error) {
 	ch.onEvent[event] = f
 }
 
