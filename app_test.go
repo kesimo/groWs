@@ -2,6 +2,7 @@ package groWs
 
 import (
 	"log"
+	"net/http"
 	"testing"
 )
 
@@ -49,7 +50,7 @@ func TestNewApp(t *testing.T) {
 
 	app := NewApp(config)
 	app.AddRouter(router)
-	app.AddHandshakeMiddleware("/test", func(client *Client) bool {
+	app.AddHandshakeMiddleware("/test", func(r *http.Request, client *Client) bool {
 		log.Println("Handshake")
 		client.SetMeta("Id", "testUser122312")
 		return true

@@ -57,7 +57,7 @@ func (ch *ClientHandler) handle(data []byte, op ws.OpCode, c *Client) error {
 		}
 		return ch.onDisconnect(c)
 	case ws.OpText:
-		if isJSON(data) && isEvent(data) {
+		if IsJSON(data) && IsEvent(data) {
 			return ch.handleOnEvent(data, c)
 		}
 		return ch.handleOn(data, c)

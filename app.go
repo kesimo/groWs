@@ -104,7 +104,7 @@ func (a *App) ListenAndServe() error {
 
 // getMiddlewaresForRoute returns all middlewares the matches the given route
 func (a *App) getMiddlewaresForRoute(route string) (HandshakeMiddleware, []ReceiveMiddleware, []SendMiddleware) {
-	hMiddlewares := func(client *Client) bool { return true }
+	hMiddlewares := func(r *http.Request, client *Client) bool { return true }
 	rMiddlewares := make([]ReceiveMiddleware, 0)
 	sMiddlewares := make([]SendMiddleware, 0)
 	// generate route specific middleware chain by regex matching
@@ -156,13 +156,20 @@ func (a *App) buildHandlerFunc(route string, handler ClientHandler) HandlerFunc 
 		// Create client
 		client := NewClient(conn, sendMiddlewares)
 
-		go webSocketHandler(client, handler, handshakeMiddleware, receiveMiddlewares)
+		// run handshake and check if client is authorized
+		handshakeResult := handshakeMiddleware(r, client)
+		if !handshakeResult {
+			// todo error handling
+			return
+		}
+
+		go webSocketHandler(client, handler, receiveMiddlewares)
 
 	}
 }
 
 // webSocketHandler handles the websocket connection in a loop on a separate goroutine
-func webSocketHandler(client *Client, handler ClientHandler, handshakeMiddleware HandshakeMiddleware, receiveMiddlewares []ReceiveMiddleware) {
+func webSocketHandler(client *Client, handler ClientHandler, receiveMiddlewares []ReceiveMiddleware) {
 
 	defer func(conn net.Conn) {
 		err := conn.Close()
@@ -176,12 +183,6 @@ func webSocketHandler(client *Client, handler ClientHandler, handshakeMiddleware
 		GetClientPool().RemoveClient(client)
 		GetClientPool().RemoveClientFromAllRooms(client, client.GetRooms())
 	}(client.getConn())
-	// run handshake and check if client is authorized
-	handshakeResult := handshakeMiddleware(client)
-	if !handshakeResult {
-		// todo error handling
-		return
-	}
 	err := handler.onConnect(client)
 	if err != nil {
 		// todo error handling
@@ -197,18 +198,20 @@ func webSocketHandler(client *Client, handler ClientHandler, handshakeMiddleware
 		if err != nil {
 			break
 		}
-
-		// handle Message
-		var middlewareError error
-		for _, middleware := range receiveMiddlewares {
-			msg, middlewareError = middleware(client, msg)
-			if middlewareError != nil {
-				log.Println("middleware error: ", middlewareError) // todo error handling
+		go func(msg []byte, opCode ws.OpCode) {
+			// handle Message
+			var middlewareError error
+			for _, middleware := range receiveMiddlewares {
+				msg, middlewareError = middleware(client, msg)
+				if middlewareError != nil {
+					log.Println("middleware error: ", middlewareError) // todo error handling
+				}
 			}
-		}
-		handlerErr := handler.handle(msg, opCode, client)
-		if handlerErr != nil {
-			log.Println(handlerErr)
-		}
+			handlerErr := handler.handle(msg, opCode, client)
+			if handlerErr != nil {
+				log.Println(handlerErr)
+			}
+		}(msg, opCode)
+
 	}
 }

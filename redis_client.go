@@ -52,8 +52,6 @@ func getPubSubClient() *pubSubClient {
 }
 
 func initPubSubClient(ctx context.Context, host string, port int) {
-	log.Println("initializing pub/sub client")
-	log.Println("addr: " + host + ":" + strconv.Itoa(port) + ", password: ''")
 	client := redis.NewClient(&redis.Options{
 		Addr:     host + ":" + strconv.Itoa(port),
 		Password: "",
@@ -155,6 +153,8 @@ func (c *pubSubClient) PublishEventToClient(userId string, event Event) error {
 	return c.redis.Publish(c.ctx, clientEventChannel, payload).Err()
 }
 
+// subscribeToAllChannels subscribes to all channels and calls the handler function
+// for each incoming message in a goroutine
 func (c *pubSubClient) subscribeToAllChannels(handler func(channel string, message string)) {
 	subs := c.redis.Subscribe(c.ctx, defaultChannel, clientChannel, clientEventChannel, roomChannel,
 		roomEventChannel, allClientsChannel, allClientsEventChannel)
@@ -167,8 +167,8 @@ func (c *pubSubClient) subscribeToAllChannels(handler func(channel string, messa
 	}
 }
 
-//handleIncomingMessage handles incoming messages from pub/sub
-
+// handleIncomingMessages handles one messages from pub/sub and sends it to the client pool
+// based on the channel identifier and the payload
 func (c *pubSubClient) handleIncomingMessages() func(channel string, message string) {
 	return func(channel string, message string) {
 		//switch case by channel name

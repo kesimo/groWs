@@ -113,8 +113,9 @@ func (cp *ClientPool) RemoveClientFromAllRooms(c *Client, rooms []string) {
 		delete(cp.rooms[roomId].clients, c.GetId())
 		if len(cp.rooms[roomId].clients) == 0 {
 			delete(cp.rooms, roomId)
+		} else {
+			cp.rooms[roomId].mu.Unlock()
 		}
-		cp.rooms[roomId].mu.Unlock()
 	}
 }
 

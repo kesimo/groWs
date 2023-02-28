@@ -116,6 +116,11 @@ func (c *Client) WriteJSON(data interface{}) error {
 	return wsutil.WriteServerMessage(c.conn, ws.OpText, jsonData)
 }
 
+// WriteEvent writes an event to the client as JSON
+func (c *Client) WriteEvent(event Event) error {
+	return c.WriteJSON(event)
+}
+
 // Read reads data from the client
 func (c *Client) Read() ([]byte, ws.OpCode, error) {
 	return wsutil.ReadClientData(c.conn)

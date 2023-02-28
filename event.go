@@ -11,14 +11,14 @@ type Event struct {
 	Data       any    `json:"data"`
 }
 
-func isJSON(data []byte) bool {
+func IsJSON(data []byte) bool {
 	if data[0] == '{' && data[len(data)-1] == '}' {
 		return true
 	}
 	return false
 }
 
-func isEvent(data []byte) bool {
+func IsEvent(data []byte) bool {
 	var e Event
 	err := json.Unmarshal(data, &e)
 	if err != nil {
