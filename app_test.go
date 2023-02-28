@@ -7,13 +7,16 @@ import (
 
 func TestNewApp(t *testing.T) {
 	config := Config{
-		Host: "localhost",
-		Port: "8080",
+		Host:         "localhost",
+		Port:         "8080",
+		EnablePubSub: true,
+		RedisHost:    "localhost",
+		RedisPort:    6379,
 	}
 	handler := NewClientHandler()
 	handler.OnConnect(func(client *Client) error {
 		log.Println("Client connected")
-		log.Println(client.GetMeta("user"))
+		log.Println(client.GetMeta("Id"))
 		AddClientToRoom(client, "testRoom")
 		return nil
 	})
@@ -48,7 +51,7 @@ func TestNewApp(t *testing.T) {
 	app.AddRouter(router)
 	app.AddHandshakeMiddleware("/test", func(client *Client) bool {
 		log.Println("Handshake")
-		client.SetMeta("user", "testUser122312")
+		client.SetMeta("Id", "testUser122312")
 		return true
 	})
 	app.AddReceiveMiddleware("/test", func(client *Client, data []byte) ([]byte, error) {

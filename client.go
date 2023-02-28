@@ -33,15 +33,15 @@ func NewClient(conn net.Conn, middlewares []SendMiddleware) *Client {
 	}
 }
 
-// JoinRoom adds a room to the client
-func (c *Client) JoinRoom(room string) {
+// joinRoom adds a id to the client
+func (c *Client) joinRoom(room string) {
 	c.roomsMu.Lock()
 	defer c.roomsMu.Unlock()
 	c.rooms = append(c.rooms, room)
 }
 
-// LeaveRoom removes a room from the client
-func (c *Client) LeaveRoom(room string) {
+// leaveRoom removes a id from the client
+func (c *Client) leaveRoom(room string) {
 	c.roomsMu.Lock()
 	defer c.roomsMu.Unlock()
 	for i, r := range c.rooms {
@@ -73,12 +73,12 @@ func (c *Client) GetMeta(key string) (interface{}, error) {
 	return c.Meta[key], nil
 }
 
-// getId returns the id of the client
-func (c *Client) getId() string {
+// GetId returns the Id of the client
+func (c *Client) GetId() string {
 	return c.id
 }
 
-func (c *Client) SetId(id string) {
+func (c *Client) setId(id string) {
 	c.id = id
 }
 

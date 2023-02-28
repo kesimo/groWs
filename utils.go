@@ -1,6 +1,6 @@
 package groWs
 
-// Broadcast sends a message to all clients in a room
+// Broadcast sends a Message to all clients in a Id
 func Broadcast(roomId string, message []byte) {
 	GetClientPool().SendToRoom(roomId, message)
 }
@@ -9,13 +9,18 @@ func BroadcastToAll(message []byte) {
 	GetClientPool().SendToAll(message)
 }
 
-// BroadcastEvent sends an event to all clients in a room
+// BroadcastEvent sends an event to all clients in a Id
 func BroadcastEvent(roomId string, event Event) error {
 	json, err := event.ToJSON()
 	if err != nil {
 		return err
 	}
-	GetClientPool().SendToRoom(roomId, json)
+
+	if pubSubEnabled {
+		return getPubSubClient().PublishEventToRoom(roomId, event)
+	} else {
+		GetClientPool().SendToRoom(roomId, json)
+	}
 	return nil
 }
 
@@ -25,31 +30,46 @@ func BroadcastEventToAll(event Event) error {
 	if err != nil {
 		return err
 	}
-	GetClientPool().SendToAll(json)
+	if pubSubEnabled {
+		return getPubSubClient().PublishEventToAll(event)
+	} else {
+		GetClientPool().SendToAll(json)
+	}
 	return nil
 }
 
-// BroadcastExcept sends a message to all clients except the client with the given id
-func BroadcastExcept(id string, message []byte) {
-	GetClientPool().SendToAllExcept(id, message)
+// BroadcastExcept sends a Message to all clients except the client with the given Id
+func BroadcastExcept(id string, message []byte) error {
+	if pubSubEnabled {
+		return getPubSubClient().PublishToAllExcept(id, message)
+	} else {
+		GetClientPool().SendToAllExcept(id, message)
+	}
+	return nil
 }
 
-// BroadcastEventExcept sends an event to all clients except the client with the given id
+// BroadcastEventExcept sends an event to all clients except the client with the given Id
 func BroadcastEventExcept(id string, event Event) error {
 	json, err := event.ToJSON()
 	if err != nil {
 		return err
 	}
-	GetClientPool().SendToAllExcept(id, json)
+	if pubSubEnabled {
+		return getPubSubClient().PublishEventToAllExcept(id, event)
+	} else {
+		GetClientPool().SendToAllExcept(id, json)
+	}
 	return nil
 }
 
-// BroadcastByMeta sends a message to all clients with a specific metadata
+// BroadcastByMeta sends a Message to all clients with a specific metadata
+// TODO: implement pub/sub
 func BroadcastByMeta(key string, value interface{}, message []byte) {
 	GetClientPool().SendToAllByMeta(key, value, message)
 }
 
 // BroadcastEventByMeta sends an event to all clients with a specific metadata
+// TODO: implement pub/sub
 func BroadcastEventByMeta(key string, value interface{}, event Event) {
 	//Convert event to json
 	json, err := event.ToJSON()
@@ -59,18 +79,26 @@ func BroadcastEventByMeta(key string, value interface{}, event Event) {
 	GetClientPool().SendToAllByMeta(key, value, json)
 }
 
-// BroadcastToClient sends a message to a client with the given id
+// BroadcastToClient sends a Message to a client with the given Id
 func BroadcastToClient(id string, message []byte) error {
-	return GetClientPool().SendToClient(id, message)
+	if pubSubEnabled {
+		return getPubSubClient().PublishToClient(id, message)
+	} else {
+		return GetClientPool().SendToClient(id, message)
+	}
 }
 
-// BroadcastEventToClient sends an event to a client with the given id
+// BroadcastEventToClient sends an event to a client with the given Id
 func BroadcastEventToClient(id string, event Event) error {
 	json, err := event.ToJSON()
 	if err != nil {
 		return err
 	}
-	return GetClientPool().SendToClient(id, json)
+	if pubSubEnabled {
+		return getPubSubClient().PublishEventToClient(id, event)
+	} else {
+		return GetClientPool().SendToClient(id, json)
+	}
 }
 
 // GetConnectedClientIds returns a list of all connected client ids
@@ -101,21 +129,21 @@ func GetConnectedClientIdsByRoom(roomId string) []string {
 	return clientIds
 }
 
-// GetClient returns a client with the given id
+// GetClient returns a client with the given Id
 func GetClient(id string) *Client {
 	return GetClientPool().GetClient(id)
 }
 
-// AddClientToRoom adds a client to a room
+// AddClientToRoom adds a client to a Id
 func AddClientToRoom(client *Client, roomId string) {
 	GetClientPool().AddClientToRoom(client, roomId)
-	client.JoinRoom(roomId)
+	client.joinRoom(roomId)
 }
 
-// RemoveClientFromRoom removes a client from a room
+// RemoveClientFromRoom removes a client from a Id
 func RemoveClientFromRoom(client *Client, roomId string) {
 	GetClientPool().RemoveClientFromRoom(client, roomId)
-	client.LeaveRoom(roomId)
+	client.leaveRoom(roomId)
 }
 
 // GetClientRooms returns a list of all rooms the client is in
