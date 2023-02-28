@@ -5,7 +5,9 @@ import (
 	"errors"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
+	"github.com/google/uuid"
 	"net"
+	"sync"
 )
 
 var ErrMetaNotFount = errors.New("metadata not found")
@@ -15,14 +17,45 @@ type Client struct {
 	// websocket connection
 	conn            net.Conn
 	sendMiddlewares []SendMiddleware
+	id              string
+	roomsMu         sync.RWMutex
+	rooms           []string
 }
 
 func NewClient(conn net.Conn, middlewares []SendMiddleware) *Client {
+	id, _ := uuid.NewUUID()
 	return &Client{
 		conn:            conn,
 		Meta:            make(map[string]interface{}),
 		sendMiddlewares: middlewares,
+		id:              id.String(),
+		rooms:           make([]string, 0),
 	}
+}
+
+// JoinRoom adds a room to the client
+func (c *Client) JoinRoom(room string) {
+	c.roomsMu.Lock()
+	defer c.roomsMu.Unlock()
+	c.rooms = append(c.rooms, room)
+}
+
+// LeaveRoom removes a room from the client
+func (c *Client) LeaveRoom(room string) {
+	c.roomsMu.Lock()
+	defer c.roomsMu.Unlock()
+	for i, r := range c.rooms {
+		if r == room {
+			c.rooms = append(c.rooms[:i], c.rooms[i+1:]...)
+		}
+	}
+}
+
+// GetRooms returns all rooms of the client
+func (c *Client) GetRooms() []string {
+	c.roomsMu.RLock()
+	defer c.roomsMu.RUnlock()
+	return c.rooms
 }
 
 // SetMeta adds metadata to a key value map
@@ -38,6 +71,15 @@ func (c *Client) GetMeta(key string) (interface{}, error) {
 		return nil, ErrMetaNotFount
 	}
 	return c.Meta[key], nil
+}
+
+// getId returns the id of the client
+func (c *Client) getId() string {
+	return c.id
+}
+
+func (c *Client) SetId(id string) {
+	c.id = id
 }
 
 // getConn returns the connection of the client

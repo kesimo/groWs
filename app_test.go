@@ -14,6 +14,7 @@ func TestNewApp(t *testing.T) {
 	handler.OnConnect(func(client *Client) error {
 		log.Println("Client connected")
 		log.Println(client.GetMeta("user"))
+		AddClientToRoom(client, "testRoom")
 		return nil
 	})
 	handler.OnDisconnect(func(client *Client) error {
@@ -28,8 +29,15 @@ func TestNewApp(t *testing.T) {
 		}
 		return nil
 	})
-	handler.OnEvent("test-event", func(client *Client, data any) error {
+	handler.OnEvent("testRoom", func(client *Client, data any) error {
 		log.Println("event: " + data.(string))
+		err := BroadcastEvent("testRoom", Event{
+			Identifier: "test-back-event",
+			Data:       "test-back-event-data",
+		})
+		if err != nil {
+			t.Errorf("Error broadcasting event: %s", err.Error())
+		}
 		return nil
 	})
 

@@ -37,3 +37,8 @@ func eventFromJSON(data []byte) (Event, error) {
 	}
 	return e, nil
 }
+
+// ToJSON converts an Event to JSON data
+func (e Event) ToJSON() ([]byte, error) {
+	return json.Marshal(e)
+}

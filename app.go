@@ -139,6 +139,8 @@ func webSocketHandler(client *Client, handler ClientHandler, handshakeMiddleware
 		if err != nil {
 			log.Println(err)
 		}
+		GetClientPool().RemoveClient(client)
+		GetClientPool().RemoveClientFromAllRooms(client, client.GetRooms())
 	}(client.getConn())
 	// run handshake and check if client is authorized
 	handshakeResult := handshakeMiddleware(client)
@@ -151,6 +153,9 @@ func webSocketHandler(client *Client, handler ClientHandler, handshakeMiddleware
 		// todo error handling
 		return
 	}
+
+	// add client to pool
+	GetClientPool().AddClient(client)
 
 	// authorized, continue with WebSocket connection
 	for {
