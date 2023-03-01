@@ -78,12 +78,12 @@ func (c *Client) GetMeta(key string) (interface{}, error) {
 	return c.meta[key], nil
 }
 
-// GetId returns the Id of the client
-func (c *Client) GetId() string {
+// GetID returns the ID of the client
+func (c *Client) GetID() string {
 	return c.id
 }
 
-func (c *Client) setId(id string) {
+func (c *Client) setID(id string) {
 	c.id = id
 }
 

@@ -1,15 +1,16 @@
 package groWs
 
-// Broadcast sends a Message to all clients in a Id
+// Broadcast sends a Message to all clients in a room
 func Broadcast(roomId string, message []byte) {
 	GetClientPool().SendToRoom(roomId, message)
 }
 
+// BroadcastToAll sends a Message to all clients connected
 func BroadcastToAll(message []byte) {
 	GetClientPool().SendToAll(message)
 }
 
-// BroadcastEvent sends an event to all clients in a Id
+// BroadcastEvent sends an event to all clients in a room
 func BroadcastEvent(roomId string, event Event) error {
 	json, err := event.ToJSON()
 	if err != nil {
@@ -38,7 +39,7 @@ func BroadcastEventToAll(event Event) error {
 	return nil
 }
 
-// BroadcastExcept sends a Message to all clients except the client with the given Id
+// BroadcastExcept sends a Message to all clients except the client with the given id
 func BroadcastExcept(id string, message []byte) error {
 	if pubSubEnabled {
 		return getPubSubClient().PublishToAllExcept(id, message)
@@ -129,18 +130,18 @@ func GetConnectedClientIdsByRoom(roomId string) []string {
 	return clientIds
 }
 
-// GetClient returns a client with the given Id
+// GetClient returns a client with the given ID
 func GetClient(id string) *Client {
 	return GetClientPool().GetClient(id)
 }
 
-// AddClientToRoom adds a client to a Id
+// AddClientToRoom adds a client to a room
 func AddClientToRoom(client *Client, roomId string) {
 	GetClientPool().AddClientToRoom(client, roomId)
 	client.joinRoom(roomId)
 }
 
-// RemoveClientFromRoom removes a client from a Id
+// RemoveClientFromRoom removes a client from a room
 func RemoveClientFromRoom(client *Client, roomId string) {
 	GetClientPool().RemoveClientFromRoom(client, roomId)
 	client.leaveRoom(roomId)

@@ -266,6 +266,7 @@ handler.OnDisconnect(func(client *groWs.Client) error {
 ## Client
 
 A ``groWs.Client`` represents a client connection and can be used to send messages to the client or store client data.
+The Client holds an internal used unique ID, that can be accessed using `client.GetID()`.
 
 ### Send a message
 
@@ -321,15 +322,75 @@ err := client.Close()
 
 ## Events
 
-todo
+An ``groWs.Event`` represents an event sent by the client. It can be used as a wrapper for the data sent by the client.
+If you want to send an event to the client, you can use the `client.WriteEvent(event Event)` function.
+
+**RECOMMENDED:** Use events to send data from and to the client, it makes it easier to handle multiple actions on both sides.
+
+The structure of an event is as follows:
+```go
+type Event struct {
+// Event identifier used to identify the event on the client and server side
+// The ClientHandler.OnEvent() method uses this identifier to match the event
+Identifier string `json:"event"`
+// Data is the data that is sent with the event and can be of any type
+// On send and receive the data is converted from JSON to any type
+Data       any    `json:"data"`
+}
+```
+
+(**Coming soon:**  Client side library to send and receive events)
+
 
 ## Utils
 
-todo
+The `groWs` package contains functions to Send Messages to a Client and to Broadcast Messages to a list of Clients.
+
+**NOTE:** All listed functions are working out of the box with the Redis Pub/Sub implementation, if configured.
+
+### Broadcasting Messages
+
+Function | Description
+--- | ---
+`groWs.Broadcast(roomId string, message []byte)` | Broadcast a raw message to all clients in a room
+`groWs.BroadcastToAll(message []byte)` | Broadcast a raw message to all clients
+`groWs.BroadcastEvent(roomId string, event Event)` | Broadcast a event to all clients in a room
+`groWs.BroadcastEventToAll(event Event)` | Broadcast a event to all clients
+`groWs.BroadcastExcept(id string, message []byte)` | Broadcast a raw message to all clients except the client with the given id (client.GetID())
+`groWs.BroadcastEventExcept(id string, event Event)` | Broadcast a event to all clients except the client with the given id (client.GetID())
+`groWs.BroadcastByMeta(key string, value interface{}, message []byte)` | Broadcast a raw message to clients with the given metadata key and value
+`groWs.BroadcastEventByMeta(key string, value interface{}, event Event)` | Broadcast a event to clients with the given metadata key and value
+--- Send to single Client by internal ID --- | ----------------------------------------
+`groWs.BroadcastToClient(id string, message []byte)` | Broadcast a raw message to a client with the given id (client.GetID())
+`groWs.BroadcastEventToClient(id string, event Event)` | Broadcast a event to a client with the given id (client.GetID())
+
+### Get Informations about Clients
+
+Function | Description
+--- | ---
+`groWs.GetConnectedClientIds()` | Get a list of all connected client ids
+`groWs.GetConnectedClientIdsByMeta(key string, value interface{})` | Get a list of all connected client ids with the given metadata key and value
+`groWs.GetConnectedClientIdsByRoom(roomId string)` | Get a list of all connected client ids in the given room
+`groWs.GetClient(id string)` | Access a client by its internal id (**NOTE:** This function is not available with the Redis Pub/Sub implementation)
+
+
+### Handling Rooms
+
+Function | Description
+--- | ---
+`groWs.AddClientToRoom(client *Client, roomId string)` | Add a client to a room
+`groWs.RemoveClientFromRoom(client *Client, roomId string)` | Remove a client from a room
+`groWs.RemoveClientFromAllRooms(client *Client)` | Remove a client from all joined rooms
+`groWs.GetClientRooms(client *Client)` | Get a list of all rooms the client is currently joined in
+
+
+
+### 
 
 # Examples
 
 A full example can be found in the [/examples](github.com/kesimo/groWs/example) directory.
+
 The example gives a suggestion on how to use the library and structure your code.
 
 # Contributing

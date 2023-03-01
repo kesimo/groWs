@@ -41,14 +41,14 @@ func GetClientPool() *ClientPool {
 func (cp *ClientPool) AddClient(c *Client) {
 	cp.mu.Lock()
 	defer cp.mu.Unlock()
-	cp.clients[c.GetId()] = c
+	cp.clients[c.GetID()] = c
 }
 
 // RemoveClient removes a client from the pool
 func (cp *ClientPool) RemoveClient(c *Client) {
 	cp.mu.Lock()
 	defer cp.mu.Unlock()
-	delete(cp.clients, c.GetId())
+	delete(cp.clients, c.GetID())
 }
 
 // GetClient returns a client by Id
@@ -89,7 +89,7 @@ func (cp *ClientPool) AddClientToRoom(c *Client, roomId string) {
 	}
 	cp.rooms[roomId].mu.Lock()
 	defer cp.rooms[roomId].mu.Unlock()
-	cp.rooms[roomId].clients[c.GetId()] = c
+	cp.rooms[roomId].clients[c.GetID()] = c
 }
 
 // RemoveClientFromRoom removes a client from a Id
@@ -98,7 +98,7 @@ func (cp *ClientPool) RemoveClientFromRoom(c *Client, roomId string) {
 	defer cp.mu.Unlock()
 	cp.rooms[roomId].mu.Lock()
 	defer cp.rooms[roomId].mu.Unlock()
-	delete(cp.rooms[roomId].clients, c.GetId())
+	delete(cp.rooms[roomId].clients, c.GetID())
 	if len(cp.rooms[roomId].clients) == 0 {
 		delete(cp.rooms, roomId)
 	}
@@ -110,7 +110,7 @@ func (cp *ClientPool) RemoveClientFromAllRooms(c *Client, rooms []string) {
 	defer cp.mu.Unlock()
 	for _, roomId := range rooms {
 		cp.rooms[roomId].mu.Lock()
-		delete(cp.rooms[roomId].clients, c.GetId())
+		delete(cp.rooms[roomId].clients, c.GetID())
 		if len(cp.rooms[roomId].clients) == 0 {
 			delete(cp.rooms, roomId)
 		} else {
@@ -163,7 +163,7 @@ func (cp *ClientPool) SendToAllExcept(id string, message []byte) {
 	cp.mu.RLock()
 	defer cp.mu.RUnlock()
 	for _, client := range cp.clients {
-		if client.GetId() != id {
+		if client.GetID() != id {
 			client.Write(message)
 		}
 	}
