@@ -8,12 +8,13 @@ import (
 	"net"
 	"net/http"
 	"regexp"
+	"strconv"
 )
 
 type Config struct {
 	// Server
 	Host string `json:"host"`
-	Port string `json:"port"`
+	Port int    `json:"port"`
 	// tls
 	UseTLS bool   `json:"use_tls"`
 	Cert   string `json:"cert"`
@@ -35,6 +36,9 @@ type App struct {
 }
 
 func NewApp(config Config) *App {
+	if config.Port == 0 {
+		config.Port = 8080
+	}
 	if config.EnablePubSub {
 		log.Println("PubSub enabled")
 		initPubSubClient(context.Background(), config.RedisHost, config.RedisPort)
@@ -42,7 +46,7 @@ func NewApp(config Config) *App {
 	}
 	return &App{
 		config:               config,
-		server:               NewServer(config.Host + ":" + config.Port),
+		server:               NewServer(config.Host + ":" + strconv.Itoa(config.Port)),
 		router:               nil,
 		handshakeMiddlewares: make(map[string]HandshakeMiddleware, 0),
 		receiveMiddlewares:   make(map[string][]ReceiveMiddleware, 0),

@@ -9,7 +9,7 @@ import (
 func TestNewApp(t *testing.T) {
 	config := Config{
 		Host:         "localhost",
-		Port:         "8080",
+		Port:         8080,
 		EnablePubSub: true,
 		RedisHost:    "localhost",
 		RedisPort:    6379,

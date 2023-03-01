@@ -10,7 +10,7 @@ import (
 func main() {
 	config := groWs.Config{
 		Host:         "localhost",
-		Port:         "8080",
+		Port:         8080,
 		EnablePubSub: true,
 		RedisHost:    "localhost",
 		RedisPort:    6379,

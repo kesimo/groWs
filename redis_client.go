@@ -52,6 +52,9 @@ func getPubSubClient() *pubSubClient {
 }
 
 func initPubSubClient(ctx context.Context, host string, port int) {
+	if port == 0 {
+		port = 6379
+	}
 	client := redis.NewClient(&redis.Options{
 		Addr:     host + ":" + strconv.Itoa(port),
 		Password: "",
