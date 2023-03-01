@@ -114,7 +114,7 @@ func GetConnectedClientIds() []string {
 func GetConnectedClientIdsByMeta(key string, value interface{}) []string {
 	clientIds := make([]string, 0)
 	for id, client := range GetClientPool().clients {
-		if client.Meta[key] == value {
+		if client.meta[key] == value {
 			clientIds = append(clientIds, id)
 		}
 	}

@@ -71,7 +71,7 @@ func (cp *ClientPool) GetClientsByMeta(key string, value interface{}) []*Client 
 	defer cp.mu.RUnlock()
 	var clients []*Client
 	for _, client := range cp.clients {
-		if client.Meta[key] == value {
+		if client.meta[key] == value {
 			clients = append(clients, client)
 		}
 	}
@@ -174,7 +174,7 @@ func (cp *ClientPool) SendToAllByMeta(key string, value interface{}, message []b
 	cp.mu.RLock()
 	defer cp.mu.RUnlock()
 	for _, client := range cp.clients {
-		if client.Meta[key] == value {
+		if client.meta[key] == value {
 			client.Write(message)
 		}
 	}

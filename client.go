@@ -10,10 +10,11 @@ import (
 	"sync"
 )
 
-var ErrMetaNotFount = errors.New("metadata not found")
+var ErrMetaNotFound = errors.New("metadata not found")
 
 type Client struct {
-	Meta map[string]interface{}
+	metaMu sync.RWMutex
+	meta   map[string]interface{}
 	// websocket connection
 	conn            net.Conn
 	sendMiddlewares []SendMiddleware
@@ -26,21 +27,21 @@ func NewClient(conn net.Conn, middlewares []SendMiddleware) *Client {
 	id, _ := uuid.NewUUID()
 	return &Client{
 		conn:            conn,
-		Meta:            make(map[string]interface{}),
+		meta:            make(map[string]interface{}),
 		sendMiddlewares: middlewares,
 		id:              id.String(),
 		rooms:           make([]string, 0),
 	}
 }
 
-// joinRoom adds a id to the client
+// joinRoom adds a room to the client's room list
 func (c *Client) joinRoom(room string) {
 	c.roomsMu.Lock()
 	defer c.roomsMu.Unlock()
 	c.rooms = append(c.rooms, room)
 }
 
-// leaveRoom removes a id from the client
+// leaveRoom is used to remove a room from the client's room list
 func (c *Client) leaveRoom(room string) {
 	c.roomsMu.Lock()
 	defer c.roomsMu.Unlock()
@@ -51,7 +52,7 @@ func (c *Client) leaveRoom(room string) {
 	}
 }
 
-// GetRooms returns all rooms of the client
+// GetRooms returns all rooms the client is in
 func (c *Client) GetRooms() []string {
 	c.roomsMu.RLock()
 	defer c.roomsMu.RUnlock()
@@ -62,15 +63,19 @@ func (c *Client) GetRooms() []string {
 // Can be used to store data about the client (e.g. username, password, etc.)
 // To get the metadata, use the GetMeta function
 func (c *Client) SetMeta(key string, value interface{}) {
-	c.Meta[key] = value
+	c.metaMu.Lock()
+	defer c.metaMu.Unlock()
+	c.meta[key] = value
 }
 
 // GetMeta returns the metadata of the client by key
 func (c *Client) GetMeta(key string) (interface{}, error) {
-	if c.Meta[key] == nil {
-		return nil, ErrMetaNotFount
+	c.metaMu.RLock()
+	defer c.metaMu.RUnlock()
+	if c.meta[key] == nil {
+		return nil, ErrMetaNotFound
 	}
-	return c.Meta[key], nil
+	return c.meta[key], nil
 }
 
 // GetId returns the Id of the client
@@ -121,7 +126,7 @@ func (c *Client) WriteEvent(event Event) error {
 	return c.WriteJSON(event)
 }
 
-// Read reads data from the client
-func (c *Client) Read() ([]byte, ws.OpCode, error) {
+// read reads data from the client
+func (c *Client) read() ([]byte, ws.OpCode, error) {
 	return wsutil.ReadClientData(c.conn)
 }

@@ -265,7 +265,59 @@ handler.OnDisconnect(func(client *groWs.Client) error {
 
 ## Client
 
-todo
+A ``groWs.Client`` represents a client connection and can be used to send messages to the client or store client data.
+
+### Send a message
+
+To send a message to the client, you can use the `Write`, `WriteJSON`, or `WriteEvent` functions.
+
+```go
+// Write a raw message
+err := client.Write([]byte("test"))
+
+// Write a JSON message
+err := client.WriteJSON(map[string]interface{}{"test": "test"})
+
+// Write an event
+err := client.WriteEvent(groWs.Event{
+    Identifier: "anyevent",
+    Data:       "anydata",
+})
+```
+
+### Store Metadata
+
+You can store and access metadata in the client using the `SetMeta` and  `GetMeta` functions.
+- Set the same key multiple times to update the value.
+- The metadata is stored in a map, so the order of the keys is not guaranteed.
+- The metadata is stored in the client, so it will be lost if the client disconnects.
+- The metadata is available to all middlewares and handlers.
+
+Usage:
+```go
+// set new metadata
+client.SetMeta("key", "value")
+
+// get metadata (returns an `groWs.ErrMetaNotFound` error if the key is not found)
+value, err := client.GetMeta("key")
+```
+
+### Get current joined rooms
+
+You can get the list of rooms the client is currently joined in using the `GetRooms` function.
+
+```go
+rooms := client.GetRooms()
+```
+
+### Close the connection
+
+You can close the connection using the `Close` function.
+
+```go
+err := client.Close()
+```
+
 
 ## Events
 
