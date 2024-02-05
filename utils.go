@@ -1,5 +1,7 @@
 package groWs
 
+import "log"
+
 // Broadcast sends a Message to all clients in a room
 func Broadcast(roomId string, message []byte) {
 	GetClientPool().SendToRoom(roomId, message)
@@ -66,7 +68,13 @@ func BroadcastEventExcept(id string, event Event) error {
 // BroadcastByMeta sends a Message to all clients with a specific metadata
 // TODO: implement pub/sub
 func BroadcastByMeta(key string, value interface{}, message []byte) {
+	if pubSubEnabled {
+		//return getPubSubClient().PublishToAllByMeta(key, value, message)
+		log.Println("Pub/Sub not implemented for BroadcastByMeta")
+	}
+
 	GetClientPool().SendToAllByMeta(key, value, message)
+
 }
 
 // BroadcastEventByMeta sends an event to all clients with a specific metadata
@@ -76,6 +84,10 @@ func BroadcastEventByMeta(key string, value interface{}, event Event) {
 	json, err := event.ToJSON()
 	if err != nil {
 		return
+	}
+	if pubSubEnabled {
+		// getPubSubClient().PublishEventToAllByMeta(key, value, event)
+		log.Println("Pub/Sub not implemented for BroadcastEventByMeta")
 	}
 	GetClientPool().SendToAllByMeta(key, value, json)
 }
