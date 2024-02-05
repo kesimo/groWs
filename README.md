@@ -5,8 +5,8 @@
 <p align="center"><strong>Framework for building Structured and scalable Websocket Servers</strong></p>
 <div align="center">
 
-<img src="https://goreportcard.com/badge/github.com/kesimo/groWs?style=flat-square" alt="">
-<img src="https://img.shields.io/github/license/kesimo/groWs?style=flat-square" alt="">
+<img src="https://goreportcard.com/badge/github.com/kesimo/grows?style=flat-square" alt="">
+<img src="https://img.shields.io/github/license/kesimo/grows?style=flat-square" alt="">
 <img src="https://img.shields.io/github/go-mod/go-version/kesimo/groWs?style=flat-square" alt="">
 <img src="https://img.shields.io/github/actions/workflow/status/kesimo/groWs/build.yml?style=flat-square" alt="">
 
