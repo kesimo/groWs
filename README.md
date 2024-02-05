@@ -385,13 +385,22 @@ Function | Description
 
 
 
-### 
+###
 
 # Examples
 
 A full example can be found in the [/examples](github.com/kesimo/groWs/example) directory.
 
 The example gives a suggestion on how to use the library and structure your code.
+
+# Roadmap
+
+- [x] Basic Server
+- [x] Basic Router
+- [x] Middlewares
+- [x] Basic Authentication Example
+- [ ] JWT auth example
+- [ ] Client Side Library
 
 # Contributing
 
