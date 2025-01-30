@@ -389,7 +389,7 @@ Function | Description
 
 # Examples
 
-A full example can be found in the [/examples](github.com/kesimo/groWs/example) directory.
+A full example can be found in the [/example](https://github.com/kesimo/groWs/tree/main/example) directory.
 
 The example gives a suggestion on how to use the library and structure your code.
 
